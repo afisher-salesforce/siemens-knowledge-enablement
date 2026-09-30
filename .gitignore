@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+.DS_Store
+*.log
+
+# Salesforce local tooling cache (not source)
+.sfdx/
+.sf/

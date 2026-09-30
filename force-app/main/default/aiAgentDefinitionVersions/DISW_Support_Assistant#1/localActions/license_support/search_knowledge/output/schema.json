@@ -1,0 +1,62 @@
+{
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "articlePortalUrl1" : {
+      "title" : "Article Portal Url 1",
+      "description" : "Portal URL for the article in the format /article?id=<Id>",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isDisplayable" : true,
+      "copilotAction:isUsedByPlanner" : true
+    },
+    "articlePortalUrl2" : {
+      "title" : "Article Portal Url 2",
+      "description" : "Portal URL for the second article",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isDisplayable" : true,
+      "copilotAction:isUsedByPlanner" : true
+    },
+    "articleSummary1" : {
+      "title" : "Article Summary 1",
+      "description" : "Summary or resolution steps from the most relevant article",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isDisplayable" : true,
+      "copilotAction:isUsedByPlanner" : true
+    },
+    "articleSummary2" : {
+      "title" : "Article Summary 2",
+      "description" : "Summary of the second most relevant article",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isDisplayable" : true,
+      "copilotAction:isUsedByPlanner" : true
+    },
+    "articleTitle1" : {
+      "title" : "Article Title 1",
+      "description" : "Title of the most relevant article",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isDisplayable" : true,
+      "copilotAction:isUsedByPlanner" : true
+    },
+    "articleTitle2" : {
+      "title" : "Article Title 2",
+      "description" : "Title of the second most relevant article",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isDisplayable" : true,
+      "copilotAction:isUsedByPlanner" : true
+    },
+    "resultCount" : {
+      "title" : "Result Count",
+      "description" : "Number of articles returned",
+      "lightning:type" : "lightning__integerType",
+      "lightning:isPII" : false,
+      "copilotAction:isDisplayable" : false,
+      "copilotAction:isUsedByPlanner" : true
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

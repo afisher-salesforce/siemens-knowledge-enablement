@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AiAgentDefinitionVersion xmlns="http://soap.sforce.com/2006/04/metadata">
+    <articleAnswersGPTEnabled>false</articleAnswersGPTEnabled>
+    <billingMode>ActionBased</billingMode>
+    <citationsEnabled>false</citationsEnabled>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The agent instructions</description>
+        <developerName>AgentScriptInternal_agent_instructions</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Agent Instructions</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The next topic to be visited</description>
+        <developerName>AgentScriptInternal_next_topic</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Next Topic</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>Salesforce Account ID passed in by the portal at conversation start</description>
+        <developerName>accountId</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Account Id</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Boolean</dataType>
+        <description>Set to True only when the customer has explicitly agreed to create the support case</description>
+        <developerName>case_confirmed</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Case Confirmed</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The support case subject captured from the knowledge search or conversation</description>
+        <developerName>case_subject</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Case Subject</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>Salesforce Contact ID passed in by the portal at conversation start</description>
+        <developerName>contactId</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Contact Id</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <genAiPlannerName>DISW_Support_Assistant_v1</genAiPlannerName>
+    <isScriptCompatibleAgent>true</isScriptCompatibleAgent>
+    <knowledgeActionEnabled>false</knowledgeActionEnabled>
+    <knowledgeFallbackEnabled>false</knowledgeFallbackEnabled>
+    <planner>
+        <fullName>DISW_Support_Assistant_v1</fullName>
+        <agentGraphRef>20ZWt00000E7lDT</agentGraphRef>
+        <description>Agentforce Service Agent for Siemens DISW Headless 360 portal. Handles technical support, case deflection, and case creation for Xcelerator Cloud customers.</description>
+        <localTopicLinks>
+            <genAiPluginName>agent_router</genAiPluginName>
+        </localTopicLinks>
+        <localTopicLinks>
+            <genAiPluginName>case_escalation</genAiPluginName>
+        </localTopicLinks>
+        <localTopicLinks>
+            <genAiPluginName>license_support</genAiPluginName>
+        </localTopicLinks>
+        <localTopicLinks>
+            <genAiPluginName>off_topic</genAiPluginName>
+        </localTopicLinks>
+        <localTopicLinks>
+            <genAiPluginName>onboarding_setup</genAiPluginName>
+        </localTopicLinks>
+        <localTopicLinks>
+            <genAiPluginName>technical_issue</genAiPluginName>
+        </localTopicLinks>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Entry point for every conversation. Routes to the appropriate DISW support domain based on the customer&apos;s issue. Does not answer questions directly.</description>
+            <genAiPluginInstructions>
+                <description>You are the DISW Support Assistant for Siemens Digital Industries Software.
+Help customers with Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital product lines.
+Always begin your first response with: &quot;I&apos;m your DISW Support Assistant, powered by Salesforce Agentforce and the Einstein Trust Layer. Your data is never shared with external AI training systems.&quot;
+Never speculate about product roadmaps, future features, pricing, or discounts.
+Never reference internal systems like JIRA, ServiceNow, or raw Salesforce record IDs.
+Never surface raw Salesforce record IDs in any response. Case numbers like 00004724 are safe; the underlying Id field is not.
+All data comes from Salesforce Knowledge, Salesforce CRM, and Salesforce Data Cloud.</description>
+                <developerName>instruction0_179Wt000000LWxm</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179Wt000000LWxm</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localDeveloperName>agent_router</localDeveloperName>
+            <masterLabel>Agent Router</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Creates a Salesforce support case by calling {!@actions.create_case}. The customer has already confirmed they want a case — call the action immediately.</description>
+            <genAiPluginInstructions>
+                <description>You are the DISW Support Assistant for Siemens Digital Industries Software.
+Help customers with Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital product lines.
+Always begin your first response with: &quot;I&apos;m your DISW Support Assistant, powered by Salesforce Agentforce and the Einstein Trust Layer. Your data is never shared with external AI training systems.&quot;
+Never speculate about product roadmaps, future features, pricing, or discounts.
+Never reference internal systems like JIRA, ServiceNow, or raw Salesforce record IDs.
+Never surface raw Salesforce record IDs in any response. Case numbers like 00004724 are safe; the underlying Id field is not.
+All data comes from Salesforce Knowledge, Salesforce CRM, and Salesforce Data Cloud.</description>
+                <developerName>instruction0_179Wt000000LWxp</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179Wt000000LWxp</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localActionLinks>
+                <functionName>create_disw_case</functionName>
+            </localActionLinks>
+            <localActions>
+                <description>Creates a Salesforce support case for the customer</description>
+                <invocationTarget>CreateDISWCase</invocationTarget>
+                <invocationTargetType>apex</invocationTargetType>
+                <isConfirmationRequired>false</isConfirmationRequired>
+                <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+                <localDeveloperName>create_disw_case</localDeveloperName>
+                <masterLabel>Create Disw Case</masterLabel>
+            </localActions>
+            <localDeveloperName>case_escalation</localDeveloperName>
+            <masterLabel>Case Escalation</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Handles FlexLM errors, license server connectivity issues, seat count questions, and license expiry for all DISW products.</description>
+            <genAiPluginInstructions>
+                <description>You are the DISW Support Assistant for Siemens Digital Industries Software.
+Help customers with Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital product lines.
+Always begin your first response with: &quot;I&apos;m your DISW Support Assistant, powered by Salesforce Agentforce and the Einstein Trust Layer. Your data is never shared with external AI training systems.&quot;
+Never speculate about product roadmaps, future features, pricing, or discounts.
+Never reference internal systems like JIRA, ServiceNow, or raw Salesforce record IDs.
+Never surface raw Salesforce record IDs in any response. Case numbers like 00004724 are safe; the underlying Id field is not.
+All data comes from Salesforce Knowledge, Salesforce CRM, and Salesforce Data Cloud.</description>
+                <developerName>instruction0_179Wt000000LWxl</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179Wt000000LWxl</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localActionLinks>
+                <functionName>create_disw_case</functionName>
+            </localActionLinks>
+            <localActionLinks>
+                <functionName>search_knowledge</functionName>
+            </localActionLinks>
+            <localActions>
+                <description>Creates a Salesforce support case for the customer</description>
+                <invocationTarget>CreateDISWCase</invocationTarget>
+                <invocationTargetType>apex</invocationTargetType>
+                <isConfirmationRequired>false</isConfirmationRequired>
+                <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+                <localDeveloperName>create_disw_case</localDeveloperName>
+                <masterLabel>Create Disw Case</masterLabel>
+            </localActions>
+            <localActions>
+                <description>Searches Salesforce Knowledge for published DISW license support articles</description>
+                <invocationTarget>SearchDISWKnowledge</invocationTarget>
+                <invocationTargetType>apex</invocationTargetType>
+                <isConfirmationRequired>false</isConfirmationRequired>
+                <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+                <localDeveloperName>search_knowledge</localDeveloperName>
+                <masterLabel>Search Knowledge</masterLabel>
+            </localActions>
+            <localDeveloperName>license_support</localDeveloperName>
+            <masterLabel>License Support</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Handles questions outside the DISW product support scope, including pricing, roadmaps, and non-DISW Siemens products.</description>
+            <genAiPluginInstructions>
+                <description>You are the DISW Support Assistant for Siemens Digital Industries Software.
+Help customers with Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital product lines.
+Always begin your first response with: &quot;I&apos;m your DISW Support Assistant, powered by Salesforce Agentforce and the Einstein Trust Layer. Your data is never shared with external AI training systems.&quot;
+Never speculate about product roadmaps, future features, pricing, or discounts.
+Never reference internal systems like JIRA, ServiceNow, or raw Salesforce record IDs.
+Never surface raw Salesforce record IDs in any response. Case numbers like 00004724 are safe; the underlying Id field is not.
+All data comes from Salesforce Knowledge, Salesforce CRM, and Salesforce Data Cloud.</description>
+                <developerName>instruction0_179Wt000000LWxq</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179Wt000000LWxq</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localDeveloperName>off_topic</localDeveloperName>
+            <masterLabel>Off Topic</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Handles new customer questions about tenant provisioning, user onboarding, license assignment, and initial product setup for Xcelerator Cloud.</description>
+            <genAiPluginInstructions>
+                <description>You are the DISW Support Assistant for Siemens Digital Industries Software.
+Help customers with Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital product lines.
+Always begin your first response with: &quot;I&apos;m your DISW Support Assistant, powered by Salesforce Agentforce and the Einstein Trust Layer. Your data is never shared with external AI training systems.&quot;
+Never speculate about product roadmaps, future features, pricing, or discounts.
+Never reference internal systems like JIRA, ServiceNow, or raw Salesforce record IDs.
+Never surface raw Salesforce record IDs in any response. Case numbers like 00004724 are safe; the underlying Id field is not.
+All data comes from Salesforce Knowledge, Salesforce CRM, and Salesforce Data Cloud.</description>
+                <developerName>instruction0_179Wt000000LWxo</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179Wt000000LWxo</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localActionLinks>
+                <functionName>search_knowledge</functionName>
+            </localActionLinks>
+            <localActions>
+                <description>Searches Salesforce Knowledge for published DISW onboarding and setup articles</description>
+                <invocationTarget>SearchDISWKnowledge</invocationTarget>
+                <invocationTargetType>apex</invocationTargetType>
+                <isConfirmationRequired>false</isConfirmationRequired>
+                <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+                <localDeveloperName>search_knowledge</localDeveloperName>
+                <masterLabel>Search Knowledge</masterLabel>
+            </localActions>
+            <localDeveloperName>onboarding_setup</localDeveloperName>
+            <masterLabel>Onboarding Setup</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Handles product error reports, configuration issues, and workflow problems for Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital. Searches Salesforce Knowledge for published articles.</description>
+            <genAiPluginInstructions>
+                <description>You are the DISW Support Assistant for Siemens Digital Industries Software.
+Help customers with Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital product lines.
+Always begin your first response with: &quot;I&apos;m your DISW Support Assistant, powered by Salesforce Agentforce and the Einstein Trust Layer. Your data is never shared with external AI training systems.&quot;
+Never speculate about product roadmaps, future features, pricing, or discounts.
+Never reference internal systems like JIRA, ServiceNow, or raw Salesforce record IDs.
+Never surface raw Salesforce record IDs in any response. Case numbers like 00004724 are safe; the underlying Id field is not.
+All data comes from Salesforce Knowledge, Salesforce CRM, and Salesforce Data Cloud.</description>
+                <developerName>instruction0_179Wt000000LWxn</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179Wt000000LWxn</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localActionLinks>
+                <functionName>create_disw_case</functionName>
+            </localActionLinks>
+            <localActionLinks>
+                <functionName>search_knowledge</functionName>
+            </localActionLinks>
+            <localActions>
+                <description>Creates a Salesforce support case for the customer</description>
+                <invocationTarget>CreateDISWCase</invocationTarget>
+                <invocationTargetType>apex</invocationTargetType>
+                <isConfirmationRequired>false</isConfirmationRequired>
+                <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+                <localDeveloperName>create_disw_case</localDeveloperName>
+                <masterLabel>Create Disw Case</masterLabel>
+            </localActions>
+            <localActions>
+                <description>Searches Salesforce Knowledge for published DISW support articles</description>
+                <invocationTarget>SearchDISWKnowledge</invocationTarget>
+                <invocationTargetType>apex</invocationTargetType>
+                <isConfirmationRequired>false</isConfirmationRequired>
+                <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+                <localDeveloperName>search_knowledge</localDeveloperName>
+                <masterLabel>Search Knowledge</masterLabel>
+            </localActions>
+            <localDeveloperName>technical_issue</localDeveloperName>
+            <masterLabel>Technical Issue</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <masterLabel>DISW Support Assistant</masterLabel>
+        <plannerType>Atlas__ConcurrentMultiAgentOrchestration</plannerType>
+    </planner>
+    <smallTalkEnabled>false</smallTalkEnabled>
+    <staticPromptsEnabled>false</staticPromptsEnabled>
+    <status>Inactive</status>
+    <stopRecPrompts>false</stopRecPrompts>
+    <surfacesEnabled>false</surfacesEnabled>
+    <toneType>Casual</toneType>
+    <version>1</version>
+    <welcomeMessage>Hello! I&apos;m your DISW Support Assistant. How can I help you today?</welcomeMessage>
+</AiAgentDefinitionVersion>

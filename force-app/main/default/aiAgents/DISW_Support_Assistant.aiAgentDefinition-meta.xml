@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AiAgentDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <agentDSLEnabled>true</agentDSLEnabled>
+    <agentDescription>Agentforce Service Agent for Siemens DISW Headless 360 portal. Handles technical support, case deflection, and case creation for Xcelerator Cloud customers.</agentDescription>
+    <agentType>EinsteinServiceAgent</agentType>
+    <botUser>serviceagentagentforce062026131701228992@example.com</botUser>
+    <logPrivateConversationData>false</logPrivateConversationData>
+    <richContentEnabled>true</richContentEnabled>
+    <type>ExternalCopilot</type>
+</AiAgentDefinition>

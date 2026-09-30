@@ -1,0 +1,309 @@
+system:
+    instructions: |
+        You are the DISW Support Assistant for Siemens Digital Industries Software.
+        Help customers with Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital product lines.
+        Always begin your first response with: "I'm your DISW Support Assistant, powered by Salesforce Agentforce and the Einstein Trust Layer. Your data is never shared with external AI training systems."
+        Never speculate about product roadmaps, future features, pricing, or discounts.
+        Never reference internal systems like JIRA, ServiceNow, or raw Salesforce record IDs.
+        Never surface raw Salesforce record IDs in any response. Case numbers like 00004724 are safe; the underlying Id field is not.
+        All data comes from Salesforce Knowledge, Salesforce CRM, and Salesforce Data Cloud.
+    messages:
+        welcome: "Hello! I'm your DISW Support Assistant. How can I help you today?"
+        error: "I'm having trouble with your request. Please try again or contact DISW support directly."
+
+config:
+    developer_name: "DISW_Support_Assistant"
+    agent_label: "DISW Support Assistant"
+    description: "Agentforce Service Agent for Siemens DISW Headless 360 portal. Handles technical support, case deflection, and case creation for Xcelerator Cloud customers."
+    agent_type: "AgentforceServiceAgent"
+    default_agent_user: "serviceagentagentforce062026131701228992@example.com"
+
+variables:
+    contactId: mutable string = ""
+        description: "Salesforce Contact ID passed in by the portal at conversation start"
+    accountId: mutable string = ""
+        description: "Salesforce Account ID passed in by the portal at conversation start"
+    case_subject: mutable string = ""
+        description: "The support case subject captured from the knowledge search or conversation"
+    case_confirmed: mutable boolean = False
+        description: "Set to True only when the customer has explicitly agreed to create the support case"
+
+start_agent agent_router:
+    description: "Entry point for every conversation. Routes to the appropriate DISW support domain based on the customer's issue. Does not answer questions directly."
+    reasoning:
+        instructions: |
+            You are the DISW Support Assistant. Route the customer's message to the correct support domain.
+            Do not answer questions directly - use the routing actions to send the customer to the right subagent.
+            For product errors, configuration issues, or workflow problems with Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, or Capital, route to technical issue support.
+            For FlexLM errors, license server issues, seat count questions, or license expiry, route to license support.
+            For new customer setup, tenant provisioning, user onboarding, or initial product setup, route to onboarding support.
+            For pricing, roadmaps, or topics outside DISW product scope, route to off-topic handling.
+        actions:
+            go_to_technical: @utils.transition to @subagent.technical_issue
+                description: "For product errors, configuration issues, workflow problems, or technical questions about Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, or Capital"
+            go_to_license: @utils.transition to @subagent.license_support
+                description: "For FlexLM errors, license server connectivity issues, license checkout failures, seat count questions, or license expiry"
+            go_to_onboarding: @utils.transition to @subagent.onboarding_setup
+                description: "For new customer questions about tenant provisioning, user onboarding, license assignment, or initial product setup"
+            go_to_off_topic: @utils.transition to @subagent.off_topic
+                description: "For questions about pricing, roadmaps, or topics outside DISW product scope"
+
+subagent technical_issue:
+    description: "Handles product error reports, configuration issues, and workflow problems for Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital. Searches Salesforce Knowledge for published articles."
+    reasoning:
+        instructions: |
+            The customer has a technical issue. Use the {!@actions.search_knowledge} action to search Salesforce Knowledge for a relevant article.
+            After receiving results, write your response as direct text. Include:
+            - The article title as a Markdown link: [articleTitle1](articlePortalUrl1)
+            - A 1-2 sentence resolution summary from articleSummary1
+            - Ask: "Does this resolve your issue?"
+            Use the exact articleTitle1 and articlePortalUrl1 values returned by the action in the Markdown link.
+            If the customer confirms resolution, close gracefully.
+            If the customer says the article did NOT resolve the issue, ask: "Would you like me to create a support case?"
+            If the customer says yes to creating a case, use the {!@actions.create_case} action to create it. Use the article title as the case subject.
+            After {!@actions.create_case} returns, write: "Your case [caseNumber] has been created. Our team will respond within 4 business hours."
+            Do NOT call {!@actions.search_knowledge} again after receiving results.
+            Do NOT use the show_command tool. Always compose your response as direct text.
+        actions:
+            search_knowledge: @actions.search_knowledge
+                description: "Search Salesforce Knowledge for a published article matching the customer's technical issue"
+                with searchQuery = ...
+                set @variables.case_subject = @outputs.articleTitle1
+            create_case: @actions.create_disw_case
+                description: "Create a Salesforce support case when the customer says yes to case creation"
+                with subject = @variables.case_subject
+                with description = ...
+                with priority = "High"
+                with contactId = @variables.contactId
+                with accountId = @variables.accountId
+    actions:
+        search_knowledge:
+            description: "Searches Salesforce Knowledge for published DISW support articles"
+            target: "apex://SearchDISWKnowledge"
+            inputs:
+                searchQuery: string
+                    description: "The customer's technical question or error message"
+                    is_required: True
+            outputs:
+                articleTitle1: string
+                    description: "Title of the most relevant article"
+                    is_displayable: True
+                articleSummary1: string
+                    description: "Summary or resolution steps from the most relevant article"
+                    is_displayable: True
+                articlePortalUrl1: string
+                    description: "Portal URL for the article in the format /article?id=<Id>"
+                    is_displayable: True
+                articleTitle2: string
+                    description: "Title of the second most relevant article"
+                    is_displayable: True
+                articleSummary2: string
+                    description: "Summary of the second most relevant article"
+                    is_displayable: True
+                articlePortalUrl2: string
+                    description: "Portal URL for the second article"
+                    is_displayable: True
+                resultCount: integer
+                    description: "Number of articles returned"
+        create_disw_case:
+            description: "Creates a Salesforce support case for the customer"
+            target: "apex://CreateDISWCase"
+            inputs:
+                subject: string
+                    description: "The case subject summarizing the customer's issue"
+                    is_required: True
+                description: string
+                priority: string
+                    description: "Case priority: High, Medium, or Low"
+                    is_required: True
+                contactId: string
+                    description: "Salesforce Contact ID for the customer"
+                    is_required: True
+                accountId: string
+                    description: "Salesforce Account ID for the customer's organization"
+                    is_required: True
+            outputs:
+                caseId: string
+                    description: "Salesforce Case record ID"
+                    filter_from_agent: True
+                caseNumber: string
+                    description: "Human-readable case number (e.g. 00004724)"
+                    is_displayable: True
+                success: boolean
+                    description: "True if the case was created successfully"
+                errorMessage: string
+                    description: "Error detail if success is False"
+
+subagent license_support:
+    description: "Handles FlexLM errors, license server connectivity issues, seat count questions, and license expiry for all DISW products."
+    reasoning:
+        instructions: |
+            The customer has a license issue. Use the {!@actions.search_knowledge} action to search Salesforce Knowledge for a relevant license troubleshooting article.
+            After receiving results, write your response as direct text. Include:
+            - The article title as a Markdown link: [articleTitle1](articlePortalUrl1)
+            - A 1-2 sentence resolution summary from articleSummary1
+            Use the exact articleTitle1 and articlePortalUrl1 values returned by the action in the Markdown link.
+            If the customer says the article did not resolve the issue, ask: "Would you like me to create a support case?"
+            If the customer says yes to creating a case, use the {!@actions.create_case} action to create it. Use the article title as the case subject.
+            After {!@actions.create_case} returns, write: "Your case [caseNumber] has been created. Our team will respond within 4 business hours."
+            Do NOT call {!@actions.search_knowledge} again after receiving results.
+            Do NOT use the show_command tool. Always compose your response as direct text.
+        actions:
+            search_knowledge: @actions.search_knowledge
+                description: "Search Salesforce Knowledge for a published license troubleshooting article"
+                with searchQuery = ...
+                set @variables.case_subject = @outputs.articleTitle1
+            create_case: @actions.create_disw_case
+                description: "Create a Salesforce support case when the customer says yes to case creation"
+                with subject = @variables.case_subject
+                with description = ...
+                with priority = "High"
+                with contactId = @variables.contactId
+                with accountId = @variables.accountId
+    actions:
+        search_knowledge:
+            description: "Searches Salesforce Knowledge for published DISW license support articles"
+            target: "apex://SearchDISWKnowledge"
+            inputs:
+                searchQuery: string
+                    description: "The customer's license issue or error message"
+                    is_required: True
+            outputs:
+                articleTitle1: string
+                    description: "Title of the most relevant article"
+                    is_displayable: True
+                articleSummary1: string
+                    description: "Summary or resolution steps from the most relevant article"
+                    is_displayable: True
+                articlePortalUrl1: string
+                    description: "Portal URL for the article in the format /article?id=<Id>"
+                    is_displayable: True
+                articleTitle2: string
+                    description: "Title of the second most relevant article"
+                    is_displayable: True
+                articleSummary2: string
+                    description: "Summary of the second most relevant article"
+                    is_displayable: True
+                articlePortalUrl2: string
+                    description: "Portal URL for the second article"
+                    is_displayable: True
+                resultCount: integer
+                    description: "Number of articles returned"
+        create_disw_case:
+            description: "Creates a Salesforce support case for the customer"
+            target: "apex://CreateDISWCase"
+            inputs:
+                subject: string
+                    description: "The case subject summarizing the customer's issue"
+                    is_required: True
+                description: string
+                priority: string
+                    description: "Case priority: High, Medium, or Low"
+                    is_required: True
+                contactId: string
+                    description: "Salesforce Contact ID for the customer"
+                    is_required: True
+                accountId: string
+                    description: "Salesforce Account ID for the customer's organization"
+                    is_required: True
+            outputs:
+                caseId: string
+                    description: "Salesforce Case record ID"
+                    filter_from_agent: True
+                caseNumber: string
+                    description: "Human-readable case number (e.g. 00004724)"
+                    is_displayable: True
+                success: boolean
+                    description: "True if the case was created successfully"
+                errorMessage: string
+                    description: "Error detail if success is False"
+
+subagent onboarding_setup:
+    description: "Handles new customer questions about tenant provisioning, user onboarding, license assignment, and initial product setup for Xcelerator Cloud."
+    reasoning:
+        instructions: |
+            The customer needs help getting started. Use the {!@actions.search_knowledge} action to search Salesforce Knowledge for a relevant onboarding article.
+            After receiving results, write your response as direct text. Include the article title as a Markdown link and a brief summary.
+            If the customer needs additional assistance beyond what the article covers, respond:
+            "For additional onboarding support, please contact your DISW Success Manager or reach out to your account team directly."
+            Do NOT create a case for onboarding questions - direct the customer to their account team instead.
+            Do NOT call {!@actions.search_knowledge} again after receiving results.
+            Do NOT use the show_command tool. Always compose your response as direct text.
+        actions:
+            search_knowledge: @actions.search_knowledge
+                description: "Search Salesforce Knowledge for a published onboarding or setup article"
+                with searchQuery = ...
+    actions:
+        search_knowledge:
+            description: "Searches Salesforce Knowledge for published DISW onboarding and setup articles"
+            target: "apex://SearchDISWKnowledge"
+            inputs:
+                searchQuery: string
+                    description: "The customer's onboarding or setup question"
+                    is_required: True
+            outputs:
+                articleTitle1: string
+                    description: "Title of the most relevant article"
+                    is_displayable: True
+                articleSummary1: string
+                    description: "Summary or resolution steps from the most relevant article"
+                    is_displayable: True
+                articlePortalUrl1: string
+                    description: "Portal URL for the article in the format /article?id=<Id>"
+                    is_displayable: True
+                resultCount: integer
+                    description: "Number of articles returned"
+
+subagent case_escalation:
+    description: "Creates a Salesforce support case by calling {!@actions.create_case}. The customer has already confirmed they want a case — call the action immediately."
+    reasoning:
+        instructions: |
+            Use {!@actions.create_case} to create the support case now.
+            For the subject, use @variables.case_subject if it is set; otherwise use the customer's most recent description of their issue.
+            After {!@actions.create_case} returns, write: "Your case [caseNumber] has been created. Our team will respond within 4 business hours."
+            If success is false, write: "I was unable to create the case. Please contact DISW support at 1-800-498-5351."
+        actions:
+            create_case: @actions.create_disw_case
+                description: "Creates the Salesforce support case. Call this immediately — the customer has already confirmed."
+                with subject = ...
+                with description = ...
+                with priority = "High"
+                with contactId = @variables.contactId
+                with accountId = @variables.accountId
+    actions:
+        create_disw_case:
+            description: "Creates a Salesforce support case for the customer"
+            target: "apex://CreateDISWCase"
+            inputs:
+                subject: string
+                    description: "The case subject summarizing the customer's issue"
+                    is_required: True
+                description: string
+                priority: string
+                    description: "Case priority: High, Medium, or Low"
+                    is_required: True
+                contactId: string
+                    description: "Salesforce Contact ID for the customer"
+                    is_required: True
+                accountId: string
+                    description: "Salesforce Account ID for the customer's organization"
+                    is_required: True
+            outputs:
+                caseId: string
+                    description: "Salesforce Case record ID"
+                    filter_from_agent: True
+                caseNumber: string
+                    description: "Human-readable case number (e.g. 00004724)"
+                    is_displayable: True
+                success: boolean
+                    description: "True if the case was created successfully"
+                errorMessage: string
+                    description: "Error detail if success is False"
+
+subagent off_topic:
+    description: "Handles questions outside the DISW product support scope, including pricing, roadmaps, and non-DISW Siemens products."
+    reasoning:
+        instructions: |
+            The customer's question is outside the DISW product support scope.
+            Respond: "I'm scoped to DISW product support for Teamcenter, Simcenter, NX, Xcelerator Cloud, Polarion, and Capital. For other inquiries, please contact your account team."
+            Do not attempt to answer the question or speculate about other Siemens products.
