@@ -5,7 +5,7 @@ import FutureStateTag from '../FutureStateTag';
 import { AgentChatContext } from '../Layout';
 
 const PIPELINE = [
-  { label: 'Knowledge__kav', body: '132 published articles across the four product groups.' },
+  { label: 'Knowledge__kav', body: '132 published articles in the connected org — nine authored for this DISW walkthrough across the product groups.' },
   { label: 'Data 360 index', body: 'Articles ingested as a retrieval source — chunked, embedded, searchable semantically.' },
   { label: 'Agentforce grounding', body: 'The agent retrieves relevant chunks at answer time instead of guessing.' },
 ];
@@ -58,7 +58,8 @@ export default function C6_Data360Index() {
           <span className="text-sm font-semibold text-th-secondary">Grounded retrieval feels like this</span>
         </div>
         <p className="text-sm text-th-muted leading-relaxed mb-3">
-          Even before a full Data 360 index, the KM agent grounds its answers in the 132 published articles. Ask it a
+          Even before a full Data 360 index, the KM agent grounds its answers in the published Knowledge base — 132
+          articles in the connected org, nine authored for this DISW walkthrough. Ask it a
           product question and watch it cite knowledge rather than improvise — that's the experience Data 360 scales
           across every source.
         </p>

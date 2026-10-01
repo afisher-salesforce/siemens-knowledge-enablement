@@ -22,7 +22,7 @@ export const NAV_ITEMS = [
   { to: '/capabilities/publish', label: '2 · Control Publication', icon: ShieldCheck, tag: 'roadmap' },
   { to: '/capabilities/review', label: '3 · Review Process', icon: CalendarClock, tag: 'live' },
   { to: '/capabilities/ai-drafting', label: '4 · AI Drafting', icon: Sparkles, tag: 'live' },
-  { to: '/capabilities/categories', label: '5 · Data Categories', icon: FolderTree, tag: 'roadmap' },
+  { to: '/capabilities/categories', label: '5 · Data Categories', icon: FolderTree, tag: 'live' },
   { to: '/capabilities/data360', label: '6 · Index in Data 360', icon: Database, tag: 'roadmap' },
   { to: '/capabilities/analytics', label: '7 · Analytics', icon: BarChart3, tag: 'roadmap' },
   { to: '/capabilities/archival', label: '8 · Archival', icon: Archive, tag: 'roadmap' },

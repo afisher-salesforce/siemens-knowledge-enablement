@@ -1,6 +1,6 @@
 # Siemens DISW — Knowledge Management Best Practices
 
-A working teaching artifact for the **Siemens Digital Industries Software (DISW)** knowledge team. It lays out eight knowledge-management capabilities as a narrative — how to distribute authoring across product groups (Teamcenter, NX, Simcenter, Calibre EDA) while keeping publication under tight control — and proves **two of them live** against the connected Salesforce org.
+A working teaching artifact for the **Siemens Digital Industries Software (DISW)** knowledge team. It lays out eight knowledge-management capabilities as a narrative — how to distribute authoring across product groups (Teamcenter, NX, Simcenter, Calibre EDA) while keeping publication under tight control — and proves **three of them live** (plus the always-on grounded KM agent) against the connected Salesforce org.
 
 The goal it delivers: a robust knowledge management and creation framework governed by the full Salesforce security model, with AI-assisted knowledge generation and publication approvals — so every product group can contribute while quality and control stay in the platform. Capability 2 shows how separating the publish privilege from create/edit and gating the Draft → Online transition through an approval process means no single actor, and no API integration, can push content live at scale without review.
 
@@ -11,8 +11,9 @@ Every section is labeled so there's no ambiguity in a demo:
 - 🟢 **Live** (`LiveBadge`) — calls the connected org in real time.
   - **Capability 3 · Review process** — reads the standard `NextReviewDate` field to list articles overdue for review.
   - **Capability 4 · AI drafting** — the custom-agent column invokes `DraftKnowledgeArticle` (text-only by default).
-  - **The KM Agent drawer** ("Ask the KM Agent") — a grounded Agentforce answer over the 132 published articles.
-- 🔵 **Roadmap / illustrative** (`FutureStateTag`) — narrative best-practice content, sample data, or recommended models not read live. Capabilities 1, 2, 5, 6, 7 and the Einstein column of 4 are labeled this way.
+  - **Capability 5 · Data Categories** — the org-standard `Product` data category group, repurposed with the DISW taxonomy; the KM agent's search action scopes retrieval with `WITH DATA CATEGORY`.
+  - **The KM Agent drawer** ("Ask the KM Agent") — a grounded Agentforce answer over the published Knowledge base (132 articles in the connected org, nine authored for this DISW walkthrough).
+- 🔵 **Roadmap / illustrative** (`FutureStateTag`) — narrative best-practice content, sample data, or recommended models not read live. Capabilities 1, 2, 6, 7 and the Einstein column of 4 are labeled this way.
 
 Nothing fakes a live capability. Where a feature isn't confirmed enabled in the org (Einstein for Knowledge, Data Category Groups), it renders as narrative + roadmap tag rather than a staged result.
 

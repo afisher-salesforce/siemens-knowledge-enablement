@@ -55,3 +55,10 @@ export async function draftArticle({ productGroup, sourceProblem, sourceNotes, f
 export async function getAgentConfig() {
   return jsonFetch('/api/agent/config');
 }
+
+// GET /api/trailhead/recommendations/:capability — live Trailhead learning
+// content for a capability, retrieved via the Trailhead MCP server and cached
+// by the BFF. Returns { slug, items:[{title,synopsis,url,type,level}], degraded }.
+export async function getTrailheadRecommendations(capability) {
+  return jsonFetch(`/api/trailhead/recommendations/${encodeURIComponent(capability)}`);
+}
