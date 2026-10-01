@@ -1,7 +1,10 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { GraduationCap, Boxes } from 'lucide-react';
 import FutureStateTag from './FutureStateTag';
 import LiveBadge from './LiveBadge';
+import TrailheadRail from './TrailheadRail';
+import { CAPABILITY_PHASE, KCS_PHASES } from '../content/kcsPhases';
 
 // Section shell shared by every capability page. Gives each capability a
 // consistent frame: an eyebrow number + title, a live/roadmap status chip, a
@@ -26,8 +29,23 @@ export default function CapabilityLayout({
   teaches,
   features = [],
   children,
+  trailheadCapability,
+  kcsPhase,
 }) {
   const teachesList = Array.isArray(teaches) ? teaches : teaches ? [teaches] : [];
+
+  // The live Trailhead learning rail is keyed by capability slug. Default to the
+  // last segment of the current route (/capabilities/<slug>) so every capability
+  // page gets a rail without per-file wiring; an explicit prop can override it
+  // (or set it to null to suppress the rail).
+  const location = useLocation();
+  const routeSlug = location.pathname.split('/').filter(Boolean).pop();
+  const trailheadSlug = trailheadCapability === undefined ? routeSlug : trailheadCapability;
+
+  // The KCS phase this capability serves (plain-language KCS loop). Defaults to the
+  // route-slug lookup; an explicit prop can override. Unmapped slugs render no chip.
+  const phaseKey = kcsPhase === undefined ? CAPABILITY_PHASE[routeSlug] : kcsPhase;
+  const phase = phaseKey ? KCS_PHASES[phaseKey] : null;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -42,6 +60,14 @@ export default function CapabilityLayout({
           {status === 'live' && <LiveBadge note={statusNote} />}
           {status === 'partial' && <LiveBadge label="Partly live" note={statusNote} />}
           {status === 'roadmap' && <FutureStateTag label="Roadmap" note={statusNote} />}
+          {phase && (
+            <span
+              className="inline-flex items-center rounded-full border border-siemens-teal/20 bg-siemens-teal/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-siemens-accent/80"
+              title={phase.tagline}
+            >
+              KCS · {phase.label}
+            </span>
+          )}
         </div>
         <h1 className="text-2xl font-bold text-th-primary">{title}</h1>
         {subtitle && <p className="text-sm text-th-muted leading-relaxed max-w-3xl">{subtitle}</p>}
@@ -92,6 +118,9 @@ export default function CapabilityLayout({
 
       {/* Body */}
       <div className="space-y-6">{children}</div>
+
+      {/* Live Trailhead learning rail (keyed by capability slug) */}
+      {trailheadSlug && <TrailheadRail capability={trailheadSlug} />}
     </div>
   );
 }
