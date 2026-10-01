@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, KeyRound, FlaskConical, GitBranch } from 'lucide-react';
 import CapabilityLayout from '../CapabilityLayout';
 import FutureStateTag from '../FutureStateTag';
+import KnowledgePermissionModel from '../KnowledgePermissionModel';
 
 const TIERS = [
   {
@@ -53,6 +54,9 @@ export default function C1_DistributeCreation() {
           </div>
         ))}
       </div>
+
+      {/* Compact pointer to the full permission model on C2 */}
+      <KnowledgePermissionModel compact />
 
       <div className="card p-5">
         <div className="flex items-center gap-2 mb-3">

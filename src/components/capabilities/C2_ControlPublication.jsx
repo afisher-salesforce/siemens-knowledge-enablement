@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, ShieldCheck, GitPullRequestArrow } from 'lucide-react';
 import CapabilityLayout from '../CapabilityLayout';
 import SecurityMatrix from '../SecurityMatrix';
+import KnowledgePermissionModel from '../KnowledgePermissionModel';
 
 const APPROVAL_STEPS = [
   { label: 'Draft', body: 'Business author creates a draft on their group\'s record type.' },
@@ -89,6 +90,9 @@ export default function C2_ControlPublication() {
           ))}
         </div>
       </div>
+
+      {/* Permission model — lifecycle rail + sandbox/prod split */}
+      <KnowledgePermissionModel />
 
       {/* Security matrix */}
       <div className="space-y-2">

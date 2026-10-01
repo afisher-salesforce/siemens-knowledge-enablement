@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { KCS_PHASES, KCS_PHASE_ORDER, CAPABILITY_PHASE } from '../content/kcsPhases';
 import TrailheadRail from './TrailheadRail';
+import KnowledgePermissionModel from './KnowledgePermissionModel';
 
 const CAPABILITIES = [
   { n: 1, to: '/capabilities/distribute', icon: Share2, title: 'Distribute knowledge creation', blurb: 'Let business users draft, while publication stays controlled — tighter for API users, elevated in sandbox with a release process.', status: 'roadmap' },
@@ -88,6 +89,9 @@ export default function OverviewView() {
           </div>
         </div>
       </div>
+
+      {/* Compact pointer to the full permission model on C2 */}
+      <KnowledgePermissionModel compact />
 
       {/* How this maps to KCS */}
       <div className="card p-5">
