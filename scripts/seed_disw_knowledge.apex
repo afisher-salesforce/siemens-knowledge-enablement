@@ -203,6 +203,103 @@ for (Knowledge__kav a : [
 }
 System.debug('Backfilled keywords on ' + kwUpdated + ' already-Online DISW articles.');
 
+// ── Idempotent Data Category tagging (Phase B) ───────────────────────────────
+// Tag each Online DISW article into the "Product" data category group so
+// capability #5 (Data Categories) is a LIVE proof and the Apex FIND can filter
+// WITH DATA CATEGORY. The org already had the max number of category groups, so
+// rather than add a new one we reuse the org-standard "Product" group, whose
+// tree was repurposed with the DISW product taxonomy (Teamcenter, NX, Simcenter,
+// Calibre, Polarion, Capital, Licensing under top category "All"). Tagging writes
+// Knowledge__DataCategorySelection CHILD rows (ParentId = the Knowledge__kav
+// version Id, DataCategoryGroupName = the group DeveloperName, DataCategoryName =
+// the category name) — NOT a field on the article. Selections on an Online
+// article cannot be inserted directly (INSUFFICIENT_ACCESS / non-editable), so,
+// like the keyword backfill, fall back to edit-draft → insert selection on the
+// draft → republish. Idempotent: query existing selections per parent and skip
+// categories already present.
+//
+// Mapping is by Title (NOT stale hardcoded Ids — the draft/republish cycle mints
+// new KAV version Ids each run). Licensing is the non-product home for the two
+// license articles; everything else maps to its product.
+final String DCG = 'Product';
+Map<String, String> categoryByTitle = new Map<String, String>{
+    'How to Activate Your Siemens DISW Software License'      => 'Licensing',
+    'Resolving Siemens SSL / FlexNet License Manager Errors'  => 'Licensing',
+    'NX License Borrowing for Offline Use'                    => 'NX',
+    'Resolving a Calibre nmDRC Crash During Rule-Deck Execution' => 'Calibre',
+    'Onboarding a New User to Siemens Xcelerator and Teamcenter' => 'Teamcenter',
+    'Configuring Teamcenter BMIDE for a New Data Model'       => 'Teamcenter',
+    'Simcenter STAR-CCM+ Solver Fails to Launch on HPC Cluster' => 'Simcenter',
+    'Polarion ALM Workflow Configuration for Requirements Approval' => 'Polarion',
+    'Capital Harness Data Synchronization Between Modules'    => 'Capital'
+};
+
+Integer tagged = 0;
+for (Knowledge__kav a : [
+        SELECT Id, Title, KnowledgeArticleId
+        FROM Knowledge__kav
+        WHERE PublishStatus = 'Online' AND RecordTypeId = :rtId]) {
+    String wantCat = categoryByTitle.get(a.Title);
+    if (wantCat == null) {
+        continue; // Online article not in our mapping — leave it alone.
+    }
+    // Already tagged with the desired category on THIS version? Skip.
+    Boolean already = false;
+    for (Knowledge__DataCategorySelection sel : [
+            SELECT DataCategoryName, DataCategoryGroupName
+            FROM Knowledge__DataCategorySelection
+            WHERE ParentId = :a.Id]) {
+        if (DCG.equals(sel.DataCategoryGroupName) && wantCat.equals(sel.DataCategoryName)) {
+            already = true;
+            break;
+        }
+    }
+    if (already) {
+        System.debug('CATEGORY ALREADY SET: ' + a.Title + ' -> ' + wantCat);
+        continue;
+    }
+    // Try a direct insert on the Online version first; on rejection, go through
+    // a draft and republish.
+    try {
+        Knowledge__DataCategorySelection sel = new Knowledge__DataCategorySelection(
+            ParentId = a.Id,
+            DataCategoryGroupName = DCG,
+            DataCategoryName = wantCat);
+        insert sel;
+        tagged++;
+        System.debug('TAGGED (online): ' + a.Title + ' -> ' + wantCat);
+    } catch (Exception e1) {
+        System.debug('Online tag rejected for ' + a.Title + ' -> ' + e1.getMessage()
+            + ' ; retrying via draft.');
+        try {
+            Id draftId = KbManagement.PublishingService.editOnlineArticle(a.KnowledgeArticleId, true);
+            // The draft is a NEW version; skip if it somehow already carries the tag.
+            Boolean draftHas = false;
+            for (Knowledge__DataCategorySelection sel : [
+                    SELECT DataCategoryName, DataCategoryGroupName
+                    FROM Knowledge__DataCategorySelection
+                    WHERE ParentId = :draftId]) {
+                if (DCG.equals(sel.DataCategoryGroupName) && wantCat.equals(sel.DataCategoryName)) {
+                    draftHas = true;
+                    break;
+                }
+            }
+            if (!draftHas) {
+                insert new Knowledge__DataCategorySelection(
+                    ParentId = draftId,
+                    DataCategoryGroupName = DCG,
+                    DataCategoryName = wantCat);
+            }
+            KbManagement.PublishingService.publishArticle(a.KnowledgeArticleId, true);
+            tagged++;
+            System.debug('TAGGED (via draft+republish): ' + a.Title + ' -> ' + wantCat);
+        } catch (Exception e2) {
+            System.debug('CATEGORY TAG FAILED for ' + a.Title + ' -> ' + e2.getMessage());
+        }
+    }
+}
+System.debug('Tagged ' + tagged + ' already-Online DISW articles into ' + DCG + '.');
+
 if (toInsert.isEmpty()) {
     System.debug('Nothing to create — all DISW articles already Online.');
     return;
@@ -224,6 +321,22 @@ for (Knowledge__kav k : [
         SELECT Id, Title, KnowledgeArticleId FROM Knowledge__kav WHERE Id IN :newIds]) {
     total++;
     try {
+        // Tag the fresh draft into Siemens_Product BEFORE publishing, so a
+        // from-scratch seed lands categorized in one pass (the backfill tagging
+        // above then finds it already-tagged and skips). Selection insert on a
+        // draft is allowed; it carries forward when the draft is published.
+        String wantCat = categoryByTitle.get(k.Title);
+        if (wantCat != null) {
+            try {
+                insert new Knowledge__DataCategorySelection(
+                    ParentId = k.Id,
+                    DataCategoryGroupName = DCG,
+                    DataCategoryName = wantCat);
+                System.debug('TAGGED DRAFT: ' + k.Title + ' -> ' + wantCat);
+            } catch (Exception eCat) {
+                System.debug('DRAFT TAG FAILED for ' + k.Title + ' -> ' + eCat.getMessage());
+            }
+        }
         KbManagement.PublishingService.publishArticle(k.KnowledgeArticleId, true);
         published++;
         System.debug('PUBLISHED: ' + k.Title);

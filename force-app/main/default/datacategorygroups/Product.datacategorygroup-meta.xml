@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataCategoryGroup xmlns="http://soap.sforce.com/2006/04/metadata">
+    <active>true</active>
+    <description>DISW product taxonomy for Knowledge: one hierarchy that drives search scoping, category-scoped agent retrieval, and category visibility. Top node All; product children plus a non-product Licensing node that gives the SSL/FlexNet and activation articles a home that is not a product name. (Repurposed from a prior solar/wind demo tree.)</description>
+    <dataCategory>
+        <dataCategory>
+            <label>Teamcenter</label>
+            <name>Teamcenter</name>
+        </dataCategory>
+        <dataCategory>
+            <label>NX</label>
+            <name>NX</name>
+        </dataCategory>
+        <dataCategory>
+            <label>Simcenter</label>
+            <name>Simcenter</name>
+        </dataCategory>
+        <dataCategory>
+            <label>Calibre</label>
+            <name>Calibre</name>
+        </dataCategory>
+        <dataCategory>
+            <label>Polarion</label>
+            <name>Polarion</name>
+        </dataCategory>
+        <dataCategory>
+            <label>Capital</label>
+            <name>Capital</name>
+        </dataCategory>
+        <dataCategory>
+            <label>Licensing</label>
+            <name>Licensing</name>
+        </dataCategory>
+        <label>All</label>
+        <name>All</name>
+    </dataCategory>
+    <label>Product</label>
+    <objectUsage>
+        <object>KnowledgeArticleVersion</object>
+    </objectUsage>
+</DataCategoryGroup>

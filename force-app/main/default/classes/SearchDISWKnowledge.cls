@@ -89,6 +89,14 @@ global without sharing class SearchDISWKnowledge {
 
             try {
                 String query = req.searchQuery;
+                // WITH DATA CATEGORY scopes the search to the Product taxonomy
+                // (capability #5, live). The org-standard "Product" category
+                // group was repurposed with the DISW product tree; BELOW All__c
+                // matches every product/Licensing leaf — all 9 DISW articles are
+                // tagged to a leaf, so this demonstrates category-scoped
+                // retrieval without dropping results. NOTE: this clause EXCLUDES
+                // any uncategorized article, so every published DISW article must
+                // carry a Product selection (see seed_disw_knowledge.apex).
                 List<List<SObject>> searchResults = [
                     FIND :query
                     IN ALL FIELDS
@@ -107,6 +115,7 @@ global without sharing class SearchDISWKnowledge {
                             Search_Keywords__c
                             WHERE PublishStatus = 'Online' AND RecordType.DeveloperName = 'DISW_Knowledge'
                             LIMIT 2)
+                    WITH DATA CATEGORY Product__c BELOW All__c
                 ];
 
                 List<Knowledge__kav> articles = (List<Knowledge__kav>) searchResults[0];
