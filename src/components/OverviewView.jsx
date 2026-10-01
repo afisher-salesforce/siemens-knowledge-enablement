@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Share2, ShieldCheck, CalendarClock, Sparkles, FolderTree, Database,
-  BarChart3, Archive, ArrowRight, CheckCircle2, CircleDashed, Wifi, WifiOff,
+  BarChart3, Archive, ArrowRight, CheckCircle2, CircleDashed,
   PenLine, Layers, Workflow, RefreshCw,
 } from 'lucide-react';
-import { getHealth } from '../api/km';
 import { KCS_PHASES, KCS_PHASE_ORDER, CAPABILITY_PHASE } from '../content/kcsPhases';
 import TrailheadRail from './TrailheadRail';
 
@@ -46,13 +45,6 @@ function StatusPill({ status }) {
 }
 
 export default function OverviewView() {
-  const [health, setHealth] = useState(null);
-  const [healthErr, setHealthErr] = useState(false);
-
-  useEffect(() => {
-    getHealth().then(setHealth).catch(() => setHealthErr(true));
-  }, []);
-
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Hero */}
@@ -70,40 +62,6 @@ export default function OverviewView() {
           Calibre&nbsp;EDA). Three of the eight are proven <strong className="text-th-secondary">live</strong> against
           the connected Salesforce org — plus the always-on grounded KM agent; the rest are laid out as a roadmap and clearly labeled as such.
         </p>
-      </div>
-
-      {/* Connection status */}
-      <div className="card p-4 flex items-center gap-3">
-        {healthErr ? (
-          <>
-            <WifiOff size={18} className="text-amber-500" />
-            <div className="text-sm text-th-muted">
-              BFF not reachable yet — run <span className="font-mono text-th-secondary">npm run dev:server</span> to
-              enable the live proofs. The teaching content renders without it.
-            </div>
-          </>
-        ) : health ? (
-          <>
-            <Wifi size={18} className={health.sfConfigured ? 'text-emerald-500' : 'text-amber-500'} />
-            <div className="text-sm text-th-muted">
-              BFF is up.{' '}
-              {health.sfConfigured
-                ? 'Salesforce credentials configured — live proofs are ready.'
-                : 'Salesforce credentials not set — live proofs will show setup guidance.'}
-              {health.sfConfigured && (
-                <>
-                  {' '}Agent {health.agentConfigured ? 'wired' : 'pending deploy'}; writes{' '}
-                  {health.writesEnabled ? 'enabled' : 'disabled (text-only drafts)'}.
-                </>
-              )}
-            </div>
-          </>
-        ) : (
-          <>
-            <CircleDashed size={18} className="text-th-muted animate-spin" />
-            <div className="text-sm text-th-muted">Checking connection…</div>
-          </>
-        )}
       </div>
 
       {/* The pain we're solving */}

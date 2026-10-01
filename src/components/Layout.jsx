@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Sparkles, MessageSquareText } from 'lucide-react';
 import Sidebar, { NAV_ITEMS } from './Sidebar';
 import ThemeToggle from './ThemeToggle';
+import ConnectionStatus from './ConnectionStatus';
 import KnowledgeAgentChat from './KnowledgeAgentChat';
 
 // Lets any capability page open the KM agent drawer with a pre-filled prompt
@@ -47,6 +48,7 @@ export default function Layout({ children }) {
               <MessageSquareText size={14} />
               <span className="text-xs font-medium hidden sm:inline">Ask the KM Agent</span>
             </button>
+            <ConnectionStatus />
             <ThemeToggle />
             <div className="w-px h-6 bg-surface-border mx-1" />
             <div className="flex items-center gap-2">
