@@ -2,6 +2,7 @@ import express from 'express';
 import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { getRecommendations } from './trailhead.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -810,6 +811,24 @@ app.delete('/api/agent/sessions/:sessionId', async (req, res) => {
   } catch (err) {
     console.error('[Agent API] Session delete error:', err.message);
     res.status(502).json({ error: 'Agent API error', message: err.message });
+  }
+});
+
+// GET /api/trailhead/recommendations/:capability — Trailhead learning content
+// for a capability, served from the committed, human-reviewed staged catalog
+// (trailhead-catalog.json). No MCP on the request path: deterministic and
+// instant. A slug with no staged cards returns items:[] + degraded:true so the
+// rail renders its quiet empty state rather than erroring.
+app.get('/api/trailhead/recommendations/:capability', (req, res) => {
+  const { capability } = req.params;
+  try {
+    const data = getRecommendations(capability);
+    // The catalog only changes on redeploy, so a long shared cache is safe.
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.json(data);
+  } catch (err) {
+    console.error('[Trailhead] recommendations error:', err.message);
+    res.status(500).json({ capability, items: [], degraded: true, error: err.message });
   }
 });
 

@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server.js",
+    "refresh:trailhead": "node --env-file=.env scripts/refresh-trailhead.js",
     "heroku-postbuild": "npm run build"
   },
   "dependencies": {

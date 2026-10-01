@@ -1,0 +1,212 @@
+{
+  "generatedAt": "2026-10-01T20:30:40.711Z",
+  "source": "Trailhead MCP content_search (staged, anchor-verified, human-reviewed)",
+  "note": "Each item is a real trailhead.salesforce.com Module/Project confirmed on-topic via content_search. A slug may legitimately carry 1-2 items (thin-but-honest). Review the diff before committing.",
+  "capabilities": {
+    "distribute": {
+      "query": "Knowledge articles Service Cloud",
+      "items": [
+        {
+          "title": "Knowledge Grounding for AI: Quick Look",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-grounding-for-ai-quick-look",
+          "synopsis": "Prepare your knowledge base to optimize AI-generated content.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 5
+        },
+        {
+          "title": "Knowledge Base Improvement Using Feedback",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-base-improvement-using-feedback",
+          "synopsis": "Set up knowledge feedback to gather insights and improve your knowledge base.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 40
+        }
+      ]
+    },
+    "publish": {
+      "query": "Lightning Knowledge publishing articles",
+      "items": [
+        {
+          "title": "Knowledge Grounding for AI: Quick Look",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-grounding-for-ai-quick-look",
+          "synopsis": "Prepare your knowledge base to optimize AI-generated content.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 5
+        },
+        {
+          "title": "Knowledge Base Improvement Using Feedback",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-base-improvement-using-feedback",
+          "synopsis": "Set up knowledge feedback to gather insights and improve your knowledge base.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 40
+        }
+      ]
+    },
+    "review": {
+      "query": "Knowledge Base Improvement Using Feedback",
+      "items": [
+        {
+          "title": "Knowledge Base Improvement Using Feedback",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-base-improvement-using-feedback",
+          "synopsis": "Set up knowledge feedback to gather insights and improve your knowledge base.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 40
+        },
+        {
+          "title": "Knowledge Grounding for AI: Quick Look",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-grounding-for-ai-quick-look",
+          "synopsis": "Prepare your knowledge base to optimize AI-generated content.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 5
+        }
+      ]
+    },
+    "ai-drafting": {
+      "query": "Agentforce knowledge grounding",
+      "items": [
+        {
+          "title": "Knowledge Grounding for AI: Quick Look",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-grounding-for-ai-quick-look",
+          "synopsis": "Prepare your knowledge base to optimize AI-generated content.",
+          "type": "Module",
+          "level": "Intermediate",
+          "minutes": 5
+        },
+        {
+          "title": "Grounding an Agent with Data",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/grounding-an-agent-with-data",
+          "synopsis": "Explore grounding to implement a strategy to connect your agents to trusted data sources.",
+          "type": "Module",
+          "level": "Intermediate",
+          "minutes": 15
+        }
+      ]
+    },
+    "categories": {
+      "query": "Salesforce Knowledge data categories",
+      "items": [
+        {
+          "title": "Knowledge Grounding for AI: Quick Look",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-grounding-for-ai-quick-look",
+          "synopsis": "Prepare your knowledge base to optimize AI-generated content.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 5
+        },
+        {
+          "title": "Knowledge Base Improvement Using Feedback",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-base-improvement-using-feedback",
+          "synopsis": "Set up knowledge feedback to gather insights and improve your knowledge base.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 40
+        }
+      ]
+    },
+    "data360": {
+      "query": "Data 360 grounding Agentforce",
+      "items": [
+        {
+          "title": "Data 360: Transform Customer Experiences",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/data-cloud-transform-customer-experiences",
+          "synopsis": "Learn the power of Data 360 and Agentforce by following along with Sunshine Trails.",
+          "type": "Module",
+          "level": "Intermediate",
+          "minutes": 10
+        },
+        {
+          "title": "Grounding an Agent with Data",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/grounding-an-agent-with-data",
+          "synopsis": "Explore grounding to implement a strategy to connect your agents to trusted data sources.",
+          "type": "Module",
+          "level": "Intermediate",
+          "minutes": 15
+        },
+        {
+          "title": "Data 360-Powered Agentforce",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/data-cloud-powered-agentforce",
+          "synopsis": "Discover how to implement Data 360 for Agentforce.",
+          "type": "Module",
+          "level": "Intermediate",
+          "minutes": 25
+        }
+      ]
+    },
+    "analytics": {
+      "query": "Reports and dashboards Service Cloud",
+      "items": [
+        {
+          "title": "Reports & Dashboards: Quick Look",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/reports-dashboards-quick-look",
+          "synopsis": "See the big picture and explore key business data.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 5
+        },
+        {
+          "title": "Quick Start: Reports & Dashboards",
+          "url": "https://trailhead.salesforce.com/en/content/learn/projects/quickstart-reports",
+          "synopsis": "Create a report and dashboard to visualize your Opportunities.",
+          "type": "Project",
+          "level": "Foundational",
+          "minutes": 15
+        },
+        {
+          "title": "Add Reports and Dashboards to a Travel Approval App",
+          "url": "https://trailhead.salesforce.com/en/content/learn/projects/add-reports-and-dashboards-to-a-travel-approval-app",
+          "synopsis": "Use reports and dashboards to analyze your travel approvals.",
+          "type": "Project",
+          "level": "Foundational",
+          "minutes": 40
+        }
+      ]
+    },
+    "archival": {
+      "query": "Salesforce Knowledge article lifecycle",
+      "items": [
+        {
+          "title": "Knowledge Grounding for AI: Quick Look",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-grounding-for-ai-quick-look",
+          "synopsis": "Prepare your knowledge base to optimize AI-generated content.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 5
+        },
+        {
+          "title": "Knowledge Base Improvement Using Feedback",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-base-improvement-using-feedback",
+          "synopsis": "Set up knowledge feedback to gather insights and improve your knowledge base.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 40
+        }
+      ]
+    },
+    "kcs": {
+      "query": "Knowledge-Centered Service Agentforce",
+      "items": [
+        {
+          "title": "Knowledge Base Improvement Using Feedback",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-base-improvement-using-feedback",
+          "synopsis": "Capture feedback and close the loop — the core KCS habit of improving knowledge in the flow of work.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 40
+        },
+        {
+          "title": "Knowledge Grounding for AI: Quick Look",
+          "url": "https://trailhead.salesforce.com/en/content/learn/modules/knowledge-grounding-for-ai-quick-look",
+          "synopsis": "See how KCS-maintained articles ground Agentforce answers across every channel.",
+          "type": "Module",
+          "level": "Foundational",
+          "minutes": 5
+        }
+      ]
+    }
+  }
+}
