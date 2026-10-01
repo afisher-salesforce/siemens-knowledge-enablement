@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Minimal System Administrator profile slice. Grants record-type visibility for
+  the new DISW_Knowledge record type on Knowledge__kav. Existing SDO record-type
+  visibilities are listed so the profile deploy preserves them.
+-->
+<Profile xmlns="http://soap.sforce.com/2006/04/metadata">
+    <custom>false</custom>
+    <recordTypeVisibilities>
+        <recordType>Knowledge__kav.DISW_Knowledge</recordType>
+        <default>true</default>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
+        <recordType>Knowledge__kav.SDO_Knowledge_Cirrus</recordType>
+        <default>false</default>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
+        <recordType>Knowledge__kav.SDO_Knowledge_FAQ</recordType>
+        <default>false</default>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
+        <recordType>Knowledge__kav.SDO_Knowledge_KCSArticle</recordType>
+        <default>false</default>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+</Profile>

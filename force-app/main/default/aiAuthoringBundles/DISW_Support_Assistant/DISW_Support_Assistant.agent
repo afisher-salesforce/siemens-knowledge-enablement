@@ -53,11 +53,11 @@ subagent technical_issue:
     reasoning:
         instructions: |
             The customer has a technical issue. Use the {!@actions.search_knowledge} action to search Salesforce Knowledge for a relevant article.
-            After receiving results, write your response as direct text. Include:
-            - The article title as a Markdown link: [articleTitle1](articlePortalUrl1)
-            - A 1-2 sentence resolution summary from articleSummary1
-            - Ask: "Does this resolve your issue?"
-            Use the exact articleTitle1 and articlePortalUrl1 values returned by the action in the Markdown link.
+            After receiving results, your response MUST follow this EXACT structure, in this order, every time:
+            LINE 1 — the value of citation1, copied EXACTLY as returned, and NOTHING ELSE on that line. citation1 is already a complete Markdown link of the form [Title](/article/Id) — reproduce it character-for-character. Do NOT rewrite it, do NOT drop the brackets or parentheses, do NOT add a domain, and do NOT replace it with the plain title.
+            Then a blank line, then a 2-3 sentence abstract that you write yourself by summarizing articleBody1 (the full article text), focusing on the concrete resolution steps. If articleBody1 is empty, fall back to articleSummary1.
+            Then: "Does this resolve your issue?"
+            LINE 1 is MANDATORY and must be citation1 verbatim. Never write the article title as plain text or as a heading. Do not add any words like "Here is an article" before LINE 1.
             If the customer confirms resolution, close gracefully.
             If the customer says the article did NOT resolve the issue, ask: "Would you like me to create a support case?"
             If the customer says yes to creating a case, use the {!@actions.create_case} action to create it. Use the article title as the case subject.
@@ -91,8 +91,14 @@ subagent technical_issue:
                 articleSummary1: string
                     description: "Summary or resolution steps from the most relevant article"
                     is_displayable: True
+                articleBody1: string
+                    description: "Full plain-text body of the most relevant article. Summarize this into a 2-3 sentence abstract for the customer."
+                    is_displayable: True
                 articlePortalUrl1: string
-                    description: "Portal URL for the article in the format /article?id=<Id>"
+                    description: "Relative in-app article URL (e.g. /article/ka0...). Use it verbatim as the target of the Markdown link so the article opens inside the KM site. Do not prefix it with a domain."
+                    is_displayable: True
+                citation1: string
+                    description: "The complete Markdown citation for the most relevant article, pre-built as [Title](/article/Id). Print this EXACTLY as returned on the first line of your reply — do not modify it."
                     is_displayable: True
                 articleTitle2: string
                     description: "Title of the second most relevant article"
@@ -100,8 +106,14 @@ subagent technical_issue:
                 articleSummary2: string
                     description: "Summary of the second most relevant article"
                     is_displayable: True
+                articleBody2: string
+                    description: "Full plain-text body of the second article."
+                    is_displayable: True
                 articlePortalUrl2: string
-                    description: "Portal URL for the second article"
+                    description: "Relative in-app article URL for the second article (e.g. /article/ka0...). Use it verbatim as the Markdown link target; do not prefix it with a domain."
+                    is_displayable: True
+                citation2: string
+                    description: "The complete Markdown citation for the second article, pre-built as [Title](/article/Id). Print this EXACTLY as returned if you reference the second article — do not modify it."
                     is_displayable: True
                 resultCount: integer
                     description: "Number of articles returned"
@@ -139,10 +151,10 @@ subagent license_support:
     reasoning:
         instructions: |
             The customer has a license issue. Use the {!@actions.search_knowledge} action to search Salesforce Knowledge for a relevant license troubleshooting article.
-            After receiving results, write your response as direct text. Include:
-            - The article title as a Markdown link: [articleTitle1](articlePortalUrl1)
-            - A 1-2 sentence resolution summary from articleSummary1
-            Use the exact articleTitle1 and articlePortalUrl1 values returned by the action in the Markdown link.
+            After receiving results, your response MUST follow this EXACT structure, in this order, every time:
+            LINE 1 — the value of citation1, copied EXACTLY as returned, and NOTHING ELSE on that line. citation1 is already a complete Markdown link of the form [Title](/article/Id) — reproduce it character-for-character. Do NOT rewrite it, do NOT drop the brackets or parentheses, do NOT add a domain, and do NOT replace it with the plain title.
+            Then a blank line, then a 2-3 sentence abstract that you write yourself by summarizing articleBody1 (the full article text), focusing on the concrete resolution steps. If articleBody1 is empty, fall back to articleSummary1.
+            LINE 1 is MANDATORY and must be citation1 verbatim. Never write the article title as plain text or as a heading. Do not add any words like "Here is an article" before LINE 1.
             If the customer says the article did not resolve the issue, ask: "Would you like me to create a support case?"
             If the customer says yes to creating a case, use the {!@actions.create_case} action to create it. Use the article title as the case subject.
             After {!@actions.create_case} returns, write: "Your case [caseNumber] has been created. Our team will respond within 4 business hours."
@@ -175,8 +187,14 @@ subagent license_support:
                 articleSummary1: string
                     description: "Summary or resolution steps from the most relevant article"
                     is_displayable: True
+                articleBody1: string
+                    description: "Full plain-text body of the most relevant article. Summarize this into a 2-3 sentence abstract for the customer."
+                    is_displayable: True
                 articlePortalUrl1: string
-                    description: "Portal URL for the article in the format /article?id=<Id>"
+                    description: "Relative in-app article URL (e.g. /article/ka0...). Use it verbatim as the target of the Markdown link so the article opens inside the KM site. Do not prefix it with a domain."
+                    is_displayable: True
+                citation1: string
+                    description: "The complete Markdown citation for the most relevant article, pre-built as [Title](/article/Id). Print this EXACTLY as returned on the first line of your reply — do not modify it."
                     is_displayable: True
                 articleTitle2: string
                     description: "Title of the second most relevant article"
@@ -184,8 +202,14 @@ subagent license_support:
                 articleSummary2: string
                     description: "Summary of the second most relevant article"
                     is_displayable: True
+                articleBody2: string
+                    description: "Full plain-text body of the second article."
+                    is_displayable: True
                 articlePortalUrl2: string
-                    description: "Portal URL for the second article"
+                    description: "Relative in-app article URL for the second article (e.g. /article/ka0...). Use it verbatim as the Markdown link target; do not prefix it with a domain."
+                    is_displayable: True
+                citation2: string
+                    description: "The complete Markdown citation for the second article, pre-built as [Title](/article/Id). Print this EXACTLY as returned if you reference the second article — do not modify it."
                     is_displayable: True
                 resultCount: integer
                     description: "Number of articles returned"
@@ -223,7 +247,10 @@ subagent onboarding_setup:
     reasoning:
         instructions: |
             The customer needs help getting started. Use the {!@actions.search_knowledge} action to search Salesforce Knowledge for a relevant onboarding article.
-            After receiving results, write your response as direct text. Include the article title as a Markdown link and a brief summary.
+            After receiving results, your response MUST follow this EXACT structure, in this order, every time:
+            LINE 1 — the value of citation1, copied EXACTLY as returned, and NOTHING ELSE on that line. citation1 is already a complete Markdown link of the form [Title](/article/Id) — reproduce it character-for-character. Do NOT rewrite it, do NOT drop the brackets or parentheses, do NOT add a domain, and do NOT replace it with the plain title.
+            Then a blank line, then a 2-3 sentence abstract that you write yourself by summarizing articleBody1 (fall back to articleSummary1 if articleBody1 is empty).
+            LINE 1 is MANDATORY and must be citation1 verbatim. Never write the article title as plain text or as a heading. Do not add any words like "Here is an article" before LINE 1.
             If the customer needs additional assistance beyond what the article covers, respond:
             "For additional onboarding support, please contact your DISW Success Manager or reach out to your account team directly."
             Do NOT create a case for onboarding questions - direct the customer to their account team instead.
@@ -248,8 +275,14 @@ subagent onboarding_setup:
                 articleSummary1: string
                     description: "Summary or resolution steps from the most relevant article"
                     is_displayable: True
+                articleBody1: string
+                    description: "Full plain-text body of the most relevant article. Summarize this into a 2-3 sentence abstract for the customer."
+                    is_displayable: True
                 articlePortalUrl1: string
-                    description: "Portal URL for the article in the format /article?id=<Id>"
+                    description: "Relative in-app article URL (e.g. /article/ka0...). Use it verbatim as the target of the Markdown link so the article opens inside the KM site. Do not prefix it with a domain."
+                    is_displayable: True
+                citation1: string
+                    description: "The complete Markdown citation for the most relevant article, pre-built as [Title](/article/Id). Print this EXACTLY as returned on the first line of your reply — do not modify it."
                     is_displayable: True
                 resultCount: integer
                     description: "Number of articles returned"

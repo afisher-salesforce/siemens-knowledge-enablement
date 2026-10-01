@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Search_Keywords__c</fullName>
+    <label>Search Keywords</label>
+    <description>Comma-separated synonyms, error codes, product names, and symptom phrasings used to lift the correct article in SOSL knowledge search. Indexed by FIND...IN ALL FIELDS; not shown to end users.</description>
+    <inlineHelpText>Enter alternate terms, error codes, and symptom phrasings a user might type when searching for this article (e.g. "error -15, won't activate, license server unreachable"). Used only to improve search relevance.</inlineHelpText>
+    <length>32768</length>
+    <trackHistory>false</trackHistory>
+    <type>LongTextArea</type>
+    <visibleLines>10</visibleLines>
+</CustomField>

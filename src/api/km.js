@@ -34,6 +34,12 @@ export async function getArticles({ scope = 'all', limit = 25 } = {}) {
   return jsonFetch(`/api/km/articles?${params.toString()}`);
 }
 
+// GET /api/km/article/:id — fetch one published article for the in-app viewer
+// (/article/:id), the pill-cited target from the KM Agent's grounded answer.
+export async function getArticle(id) {
+  return jsonFetch(`/api/km/article/${encodeURIComponent(id)}`);
+}
+
 // POST /api/km/draft-article — LIVE proof (a), custom-agent column. By default
 // returns generated text only; persisting a draft requires BOTH createDraft=true
 // here AND ALLOW_KM_WRITES=true on the server.

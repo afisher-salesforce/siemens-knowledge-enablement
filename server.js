@@ -152,6 +152,170 @@ async function soqlQuery(soql) {
   return data;
 }
 
+// Run a SOSL search against the org's REST search endpoint. Returns the parsed
+// response ({ searchRecords: [...] }).
+async function soslSearch(sosl) {
+  const { accessToken, instanceUrl } = await getAccessToken();
+  const url = `${instanceUrl}/services/data/${SF_API_VER}/search/?q=${encodeURIComponent(sosl)}`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
+  });
+  const text = await response.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    const err = new Error(`Non-JSON SOSL response (${response.status})`);
+    err.status = response.status;
+    err.body = text.slice(0, 400);
+    throw err;
+  }
+  if (!response.ok) {
+    const err = new Error(Array.isArray(data) ? data[0]?.message : `SOSL failed (${response.status})`);
+    err.status = response.status;
+    err.body = data;
+    throw err;
+  }
+  return data;
+}
+
+// Index of published DISW Knowledge articles ({ id, title }), cached briefly so
+// we can map the agent's reply back to the exact article it grounded on without
+// a SOQL round-trip per message. The corpus is tiny (≈9 articles) and changes
+// rarely, so a short TTL is plenty.
+let diswArticleIndex = { articles: [], expiresAt: 0 };
+const DISW_INDEX_TTL_MS = 5 * 60 * 1000;
+
+async function getDiswArticleIndex() {
+  if (diswArticleIndex.articles.length && Date.now() < diswArticleIndex.expiresAt) {
+    return diswArticleIndex.articles;
+  }
+  try {
+    const soql =
+      "SELECT Id, Title FROM Knowledge__kav " +
+      "WHERE PublishStatus = 'Online' AND RecordType.DeveloperName = 'DISW_Knowledge' " +
+      'ORDER BY Title LIMIT 200';
+    const data = await soqlQuery(soql);
+    const articles = (data.records || [])
+      .filter((r) => r.Id && r.Title)
+      .map((r) => ({ id: r.Id, title: r.Title }));
+    if (articles.length) {
+      diswArticleIndex = { articles, expiresAt: Date.now() + DISW_INDEX_TTL_MS };
+    }
+    return articles;
+  } catch (err) {
+    console.warn('[Agent API] DISW article index load failed (non-fatal):', err.message);
+    return diswArticleIndex.articles; // may be stale/empty; caller handles null
+  }
+}
+
+// Normalize a title for tolerant comparison: lowercase, collapse whitespace,
+// strip surrounding Markdown-link syntax, drop trailing punctuation.
+function normalizeTitle(s) {
+  let t = (s || '').trim();
+  // If the line is a Markdown link [Title](...), pull out the Title.
+  const md = /^\[([^\]]+)\]\([^)]*\)\s*$/.exec(t);
+  if (md) t = md[1];
+  return t
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[.:;,\s]+$/g, '')
+    .trim();
+}
+
+// Map the agent's own reply to the article it grounded on. The subagents are
+// instructed to lead with the article title (as a citation) on the first line,
+// so the agent's response — not the raw user query — is the ground truth for
+// which article was used. Matching on the reply makes the in-app pill track the
+// agent's actual grounding exactly, which a separate query-based SOSL does not
+// (a verbose user sentence can SOSL-rank to a different article than the focused
+// query the planner passes to search_knowledge). Returns { id, title } or null.
+async function matchCitationFromReply(replyText) {
+  const text = (replyText || '').trim();
+  if (!text) return null;
+  const index = await getDiswArticleIndex();
+  if (!index.length) return null;
+
+  // Candidate lines: the first few non-empty lines (title is normally line 1,
+  // but a preamble or blank line can push it down).
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+
+  const normIndex = index.map((a) => ({ ...a, norm: normalizeTitle(a.title) }));
+
+  // 1) Exact normalized match of a whole line to an article title.
+  for (const line of lines) {
+    const n = normalizeTitle(line);
+    const hit = normIndex.find((a) => a.norm === n);
+    if (hit) return { id: hit.id, title: hit.title };
+  }
+  // 2) A line that STARTS WITH the title (agent prepended/append­ed words).
+  for (const line of lines) {
+    const n = normalizeTitle(line);
+    const hit = normIndex.find((a) => n.startsWith(a.norm) || a.norm.startsWith(n));
+    if (hit && n.length >= 8) return { id: hit.id, title: hit.title };
+  }
+  // 3) Title appears anywhere in the reply (last resort, longest title wins to
+  // avoid a short title matching inside a longer one).
+  const normBody = normalizeTitle(text);
+  const contained = normIndex
+    .filter((a) => a.norm.length >= 12 && normBody.includes(a.norm))
+    .sort((a, b) => b.norm.length - a.norm.length);
+  if (contained.length) return { id: contained[0].id, title: contained[0].title };
+
+  return null;
+}
+
+// Find the published Knowledge article the agent grounds on for a given query
+// by invoking the SAME Apex action the agent uses (SearchDISWKnowledge) via the
+// Actions REST API. Returns { id, title } for the top hit, or null. Used as a
+// FALLBACK when the agent's reply can't be matched to an article title (see
+// matchCitationFromReply, which is preferred because it tracks the agent's
+// actual grounding). The DISW_Support_Assistant agent grounds correctly but will
+// not reliably emit the article as a Markdown link in its prose (its
+// citedReferences also come back empty), so the BFF attaches this citation and
+// the drawer renders a deterministic in-app pill decoupled from the agent's
+// wording. Best-effort: never throws into the message flow.
+async function findCitationArticle(queryText) {
+  const q = (queryText || '').trim();
+  if (!q) return null;
+  try {
+    const { accessToken, instanceUrl } = await getAccessToken();
+    const url = `${instanceUrl}/services/data/${SF_API_VER}/actions/custom/apex/SearchDISWKnowledge`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ inputs: [{ searchQuery: q }] }),
+    });
+    if (!response.ok) {
+      console.warn('[Agent API] citation lookup action failed (non-fatal):', response.status);
+      return null;
+    }
+    const data = await response.json();
+    const out = (Array.isArray(data) ? data[0] : data)?.outputValues;
+    const title = out?.articleTitle1;
+    // Prefer the explicit articleId1 the action now returns; fall back to
+    // parsing the "/article/<Id>" portal URL so the BFF still works if it is
+    // deployed/running ahead of the updated Apex.
+    const id =
+      out?.articleId1 ||
+      (typeof out?.articlePortalUrl1 === 'string'
+        ? out.articlePortalUrl1.replace(/^\/article\//, '')
+        : null);
+    if (title && id) return { id, title };
+  } catch (err) {
+    console.warn('[Agent API] citation lookup failed (non-fatal):', err.message);
+  }
+  return null;
+}
+
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 
@@ -264,6 +428,98 @@ app.get('/api/km/articles', async (req, res) => {
     res.json({ scope, count: data.totalSize ?? articles.length, articles });
   } catch (err) {
     console.error('[KM] articles query error:', err.message);
+    if (err.status === 401 || (err.message || '').includes('auth')) {
+      tokenCache = { accessToken: null, instanceUrl: null, expiresAt: 0 };
+      return res.status(401).json({ error: 'Authentication failed', message: err.message });
+    }
+    res.status(502).json({ error: 'Upstream error', message: err.message, detail: err.body });
+  }
+});
+
+// GET /api/km/article/:id — fetch ONE published Knowledge__kav by Id for the
+// in-app article viewer (/article/:id). The agent cites articles with a relative
+// /article/<Id> link so the content renders inside this Heroku app rather than
+// jumping out to Salesforce Lightning — showcasing Agentforce end-to-end.
+//
+// Returns the record-type-specific rich-text body fields WITH their HTML intact
+// (the React ArticleView sanitizes + renders them). Same defensive field
+// fallback as /api/km/articles: some record types lack some fields, so on an
+// INVALID_FIELD error we retry with the minimal set.
+app.get('/api/km/article/:id', async (req, res) => {
+  if (!SF_CLIENT_ID || !SF_CLIENT_SECRET || !SF_INSTANCE_URL) {
+    return res.status(503).json({ error: 'Salesforce credentials not configured' });
+  }
+
+  const rawId = String(req.params.id || '');
+  // Guard against SOQL injection — Salesforce Ids are 15/18 alphanumerics.
+  if (!/^[a-zA-Z0-9]{15,18}$/.test(rawId)) {
+    return res.status(400).json({ error: 'Invalid article Id' });
+  }
+
+  const bodyFields =
+    'Summary, FAQ_Question__c, FAQ_Answer__c, Chat_Answer__c, ' +
+    'KCSArticle_Issue__c, KCSArticle_Cause__c, KCSArticle_Environment__c, KCSArticle_Resolution__c';
+  const fullFields = `Id, Title, KnowledgeArticleId, PublishStatus, LastPublishedDate, RecordType.Name, ${bodyFields}`;
+  const minFields = `Id, Title, KnowledgeArticleId, PublishStatus, ${bodyFields}`;
+
+  const buildSoql = (fields) =>
+    `SELECT ${fields} FROM Knowledge__kav WHERE Id = '${rawId}' AND PublishStatus = 'Online' LIMIT 1`;
+
+  const isFieldError = (err) => {
+    const code = err?.errorCode || '';
+    const msg = (err?.message || '').toLowerCase();
+    return code === 'INVALID_FIELD' || msg.includes('no such column') || msg.includes('invalid field');
+  };
+
+  try {
+    let data;
+    try {
+      data = await soqlQuery(buildSoql(fullFields));
+    } catch (err) {
+      if (isFieldError(err)) {
+        console.warn('[KM] article: optional field missing — retrying with minimal fields.');
+        data = await soqlQuery(buildSoql(minFields));
+      } else {
+        throw err;
+      }
+    }
+
+    const r = (data.records || [])[0];
+    if (!r) {
+      return res.status(404).json({ error: 'Article not found or not published' });
+    }
+
+    // Assemble the body sections in reading order, preserving their HTML so the
+    // client can sanitize + render rich text. Only include populated sections.
+    const sections = [];
+    const push = (label, html) => {
+      if (html && String(html).trim()) sections.push({ label: label || null, html: String(html) });
+    };
+    // KCS: Issue → Environment → Cause → Resolution
+    push('Issue', r.KCSArticle_Issue__c);
+    push('Environment', r.KCSArticle_Environment__c);
+    push('Cause', r.KCSArticle_Cause__c);
+    push('Resolution', r.KCSArticle_Resolution__c);
+    // FAQ: Question → Answer
+    push('Question', r.FAQ_Question__c);
+    push(null, r.FAQ_Answer__c);
+    // Chat-answer fallback
+    push(null, r.Chat_Answer__c);
+    // Summary fallback when no body section carried content
+    if (sections.length === 0 && r.Summary) push(null, r.Summary);
+
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json({
+      id: r.Id,
+      title: r.Title,
+      articleId: r.KnowledgeArticleId,
+      summary: r.Summary || null,
+      recordType: r.RecordType?.Name || null,
+      lastPublished: r.LastPublishedDate || null,
+      sections,
+    });
+  } catch (err) {
+    console.error('[KM] article query error:', err.message);
     if (err.status === 401 || (err.message || '').includes('auth')) {
       tokenCache = { accessToken: null, instanceUrl: null, expiresAt: 0 };
       return res.status(401).json({ error: 'Authentication failed', message: err.message });
@@ -469,6 +725,18 @@ app.post('/api/agent/sessions/:sessionId/messages', async (req, res) => {
     const sfUrl = `${AGENT_API_HOST}${AGENT_API_BASE}/sessions/${sessionId}/messages`;
     console.log(`[Agent API] Sending message to session ${sessionId}`);
 
+    // The user's query text — used to look up the grounded article for a
+    // deterministic in-app citation pill (the agent won't emit it reliably).
+    const queryText =
+      typeof req.body?.message === 'string'
+        ? req.body.message
+        : req.body?.message?.text || req.body?.text || '';
+
+    // Warm the query-based fallback concurrently with the agent call. For the
+    // JSON path we PREFER matching the agent's actual reply (matchCitationFromReply)
+    // so the pill tracks the article the agent truly grounded on; the query-based
+    // lookup is only a fallback when the reply can't be matched to a title.
+    const fallbackCitationPromise = findCitationArticle(queryText);
     const sfResponse = await fetch(sfUrl, {
       method: 'POST',
       headers: {
@@ -485,12 +753,28 @@ app.post('/api/agent/sessions/:sessionId/messages', async (req, res) => {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
+      // SSE: the reply isn't buffered here, so we can only use the query-based
+      // lookup. Emit the citation as a synthetic event first, then pipe through.
+      const citation = await fallbackCitationPromise;
+      if (citation) {
+        res.write(`data: ${JSON.stringify({ type: 'Citation', citation })}\n\n`);
+      }
       sfResponse.body.pipe(res);
       return;
     }
 
     if (contentType.includes('application/json')) {
       const data = await sfResponse.json();
+      // Prefer the reply-derived citation (tracks the agent's real grounding);
+      // fall back to the query-based lookup only if the reply has no title match.
+      const replyText =
+        data?.messages?.find((m) => m?.message)?.message ||
+        data?.messages?.[0]?.message ||
+        data?.messages?.[0]?.text ||
+        '';
+      let citation = await matchCitationFromReply(replyText);
+      if (!citation) citation = await fallbackCitationPromise;
+      if (citation) data.citation = citation;
       res.status(sfResponse.status).json(data);
     } else {
       const text = await sfResponse.text();

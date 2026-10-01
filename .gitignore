@@ -8,3 +8,7 @@ dist/
 # Salesforce local tooling cache (not source)
 .sfdx/
 .sf/
+
+# Org-generated agent version snapshots (pulled down by `sf agent publish`;
+# regenerable deploy artifacts, not site source)
+force-app/main/default/aiAgentDefinitionVersions/

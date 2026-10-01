@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>DISW Knowledge Admin</label>
+    <description>Grants field-level security for DISW Knowledge custom fields so the integration/admin user and anonymous Apex can read and edit them. Add fields here as the DISW Knowledge model grows.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <fieldPermissions>
+        <field>Knowledge__kav.Search_Keywords__c</field>
+        <editable>true</editable>
+        <readable>true</readable>
+    </fieldPermissions>
+</PermissionSet>

@@ -1,7 +1,63 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Sparkles, Send, Zap, Loader2, AlertCircle, BookOpen } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { X, Sparkles, Send, Zap, Loader2, AlertCircle, BookOpen, FileText } from 'lucide-react';
 
 const AGENT_API = '/api/agent';
+
+// Match a Markdown link [text](url) where url is EITHER an in-app relative
+// article path (/article/<Id>) OR an absolute http(s) URL. The agent is
+// instructed to cite the grounded article as [title](/article/<Id>) so the
+// citation opens inside this app's own viewer; absolute URLs (if any) still
+// render as external anchors.
+const MD_LINK = /\[([^\]]+)\]\((\/article\/[A-Za-z0-9]+|https?:\/\/[^\s)]+)\)/g;
+
+// Render agent text: in-app /article/ citations become a PILL/button that
+// navigates within the SPA (react-router Link, no full reload); external links
+// stay plain anchors; everything else is plain text with newlines preserved.
+function renderRichText(text, onArticleOpen) {
+  const nodes = [];
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+  MD_LINK.lastIndex = 0;
+  while ((match = MD_LINK.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index));
+    }
+    const label = match[1];
+    const url = match[2];
+    if (url.startsWith('/article/')) {
+      nodes.push(
+        <Link
+          key={`art-${key++}`}
+          to={url}
+          onClick={onArticleOpen}
+          className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-full text-xs font-medium bg-siemens-teal/10 border border-siemens-teal/30 text-siemens-accent hover:bg-siemens-teal/20 hover:border-siemens-teal/50 transition-colors align-middle break-words"
+        >
+          <FileText size={12} className="shrink-0" />
+          {label}
+        </Link>
+      );
+    } else {
+      nodes.push(
+        <a
+          key={`lnk-${key++}`}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-siemens-accent underline underline-offset-2 hover:text-siemens-teal break-words"
+        >
+          {label}
+        </a>
+      );
+    }
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    nodes.push(text.slice(lastIndex));
+  }
+  return nodes;
+}
 
 // KM-flavored prompts — these exercise the agent's search_knowledge grounding
 // against the org's published Knowledge__kav articles (proof point b).
@@ -144,7 +200,15 @@ export default function KnowledgeAgentChat({ open, onClose, prefill, onPrefillCo
               if (line.startsWith('data: ')) {
                 try {
                   const eventData = JSON.parse(line.slice(6));
-                  if (eventData.type === 'Inform' || eventData.type === 'TextChunk') {
+                  if (eventData.type === 'Citation' && eventData.citation) {
+                    // Deterministic in-app citation attached by the BFF, rendered
+                    // as a pill regardless of the agent's prose formatting.
+                    setMessages((prev) =>
+                      prev.map((m) =>
+                        m.id === agentMsgId ? { ...m, citation: eventData.citation } : m
+                      )
+                    );
+                  } else if (eventData.type === 'Inform' || eventData.type === 'TextChunk') {
                     agentText += eventData.text || eventData.message || '';
                     setMessages((prev) =>
                       prev.map((m) => (m.id === agentMsgId ? { ...m, content: agentText } : m))
@@ -182,7 +246,7 @@ export default function KnowledgeAgentChat({ open, onClose, prefill, onPrefillCo
             JSON.stringify(data);
           setMessages((prev) => [
             ...prev,
-            { role: 'agent', content: agentReply, timestamp: new Date() },
+            { role: 'agent', content: agentReply, citation: data.citation || null, timestamp: new Date() },
           ]);
         }
       } catch (err) {
@@ -321,7 +385,19 @@ export default function KnowledgeAgentChat({ open, onClose, prefill, onPrefillCo
                       </div>
                     )}
                     {msg.role !== 'error' && msg.content && (
-                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                      <div className="whitespace-pre-wrap break-words">
+                        {msg.role === 'agent' ? renderRichText(msg.content, onClose) : msg.content}
+                      </div>
+                    )}
+                    {msg.role === 'agent' && msg.citation && (
+                      <Link
+                        to={`/article/${msg.citation.id}`}
+                        onClick={onClose}
+                        className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full text-xs font-medium bg-siemens-teal/10 border border-siemens-teal/30 text-siemens-accent hover:bg-siemens-teal/20 hover:border-siemens-teal/50 transition-colors align-middle break-words"
+                      >
+                        <FileText size={12} className="shrink-0" />
+                        {msg.citation.title}
+                      </Link>
                     )}
                   </div>
                 </div>

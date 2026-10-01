@@ -11,6 +11,7 @@ import C5_DataCategories from './components/capabilities/C5_DataCategories';
 import C6_Data360Index from './components/capabilities/C6_Data360Index';
 import C7_Analytics from './components/capabilities/C7_Analytics';
 import C8_Archival from './components/capabilities/C8_Archival';
+import ArticleView from './components/ArticleView';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/capabilities/data360" element={<C6_Data360Index />} />
           <Route path="/capabilities/analytics" element={<C7_Analytics />} />
           <Route path="/capabilities/archival" element={<C8_Archival />} />
+          <Route path="/article/:id" element={<ArticleView />} />
           <Route path="*" element={<Navigate to="/overview" replace />} />
         </Routes>
       </ErrorBoundary>
