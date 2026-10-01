@@ -13,6 +13,7 @@ export const AgentChatContext = createContext(null);
 export default function Layout({ children }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [agentPrefill, setAgentPrefill] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
 
   const current = NAV_ITEMS.find((n) => n.to === location.pathname);
@@ -25,9 +26,12 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-surface-bg">
-      <Sidebar />
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed((v) => !v)}
+      />
 
-      <div className="ml-56">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-56'}`}>
         {/* Top header */}
         <header className="sticky top-0 z-20 h-14 bg-[var(--table-header-bg)]/80 backdrop-blur-xl border-b border-surface-border flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
